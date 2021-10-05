@@ -4,6 +4,7 @@ import (
 	".main.go/assemblyspot"
 	veh ".main.go/vehicle"
 	"fmt"
+	"sync"
 )
 
 const assemblySpots int = 5
@@ -50,8 +51,22 @@ func (f *Factory) StartAssemblingProcess(amountOfVehicles int) chan *veh.Car {
 				fmt.Println("there was an error while creating one vehicle")
 				return
 			}
-			vehicle.TestingLog = f.testCar(vehicle)
-			vehicle.AssembleLog = idleSpot.GetAssembledLogs()
+
+			var wgLogs sync.WaitGroup
+			wgLogs.Add(2)
+			go func(v *veh.Car) {
+				vehicle.TestingLog = f.testCar(vehicle)
+				fmt.Println("inside StartAssemblingProcess")
+				fmt.Println("testing log: ", vehicle.TestingLog)
+				wgLogs.Done()
+			}(vehicle)
+			go func(v *veh.Car) {
+				vehicle.AssembleLog = idleSpot.GetAssembledLogs()
+				fmt.Println("inside StartAssemblingProcess")
+				fmt.Println("assembly log: ", vehicle.AssembleLog)
+				wgLogs.Done()
+			}(vehicle)
+			wgLogs.Wait()
 
 			idleSpot.SetVehicle(nil)
 			f.AssemblingSpots <- idleSpot
