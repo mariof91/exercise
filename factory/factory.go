@@ -1,10 +1,9 @@
 package factory
 
 import (
-	"fmt"
-
 	".main.go/assemblyspot"
-	".main.go/vehicle"
+	veh ".main.go/vehicle"
+	"fmt"
 )
 
 const assemblySpots int = 5
@@ -35,34 +34,40 @@ func New() *Factory {
 
 //HINT: this function is currently not returning anything, make it return right away every single vehicle once assembled,
 //(Do not wait for all of them to be assembled to return them all, send each one ready over to main)
-func (f *Factory) StartAssemblingProcess(amountOfVehicles int) {
+func (f *Factory) StartAssemblingProcess(amountOfVehicles int) chan *veh.Car {
 	vehicleList := f.generateVehicleLots(amountOfVehicles)
+	carChannel := make(chan *veh.Car, assemblySpots)
 
-	for _, vehicle := range vehicleList {
-		fmt.Println("Assembling vehicle...")
+	for i, vehicle := range vehicleList {
+		go func(v veh.Car) {
+			fmt.Println("Assembling vehicle...", i)
 
-		idleSpot := <-f.AssemblingSpots
-		idleSpot.SetVehicle(&vehicle)
-		vehicle, err := idleSpot.AssembleVehicle()
+			idleSpot := <-f.AssemblingSpots
+			idleSpot.SetVehicle(&v)
+			vehicle, err := idleSpot.AssembleVehicle()
 
-		if err != nil {
-			continue
-		}
+			if err != nil {
+				fmt.Println("there was an error while creating one vehicle")
+				return
+			}
+			vehicle.TestingLog = f.testCar(vehicle)
+			vehicle.AssembleLog = idleSpot.GetAssembledLogs()
 
-		vehicle.TestingLog = f.testCar(vehicle)
-		vehicle.AssembleLog = idleSpot.GetAssembledLogs()
+			idleSpot.SetVehicle(nil)
+			f.AssemblingSpots <- idleSpot
+			carChannel <- vehicle
+		}(vehicle)
 
-		idleSpot.SetVehicle(nil)
-		f.AssemblingSpots <- idleSpot
 	}
+	return carChannel
 }
 
-func (Factory) generateVehicleLots(amountOfVehicles int) []vehicle.Car {
-	var vehicles = []vehicle.Car{}
+func (Factory) generateVehicleLots(amountOfVehicles int) []veh.Car {
+	var vehicles = []veh.Car{}
 	var index = 0
 
 	for {
-		vehicles = append(vehicles, vehicle.Car{
+		vehicles = append(vehicles, veh.Car{
 			Id:            index,
 			Chassis:       "NotSet",
 			Tires:         "NotSet",
@@ -84,7 +89,7 @@ func (Factory) generateVehicleLots(amountOfVehicles int) []vehicle.Car {
 	return vehicles
 }
 
-func (f *Factory) testCar(car *vehicle.Car) string {
+func (f *Factory) testCar(car *veh.Car) string {
 	logs := ""
 
 	log, err := car.StartEngine()

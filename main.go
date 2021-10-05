@@ -2,6 +2,7 @@ package main
 
 import (
 	".main.go/factory"
+	"fmt"
 )
 
 const carsAmount = 100
@@ -11,5 +12,11 @@ func main() {
 
 	//Hint: change appropriately for making factory give each vehicle once assembled, even though the others have not been assembled yet,
 	//each vehicle delivered to main should display testinglogs and assemblelogs with the respective vehicle id
-	factory.StartAssemblingProcess(carsAmount)
+	cars := factory.StartAssemblingProcess(carsAmount)
+
+	for i := 0; i < carsAmount; i++ {
+		car := <-cars
+		fmt.Println("Inside main, car ID: ", car.Id)
+
+	}
 }
