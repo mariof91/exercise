@@ -35,8 +35,8 @@ func (s *factoryUnitTestSuite) TestSample() {
 	s.Assert().Contains( cars, 0)
 	s.Assert().Contains( cars, 1)
 	s.Assert().NotContains(cars, 2)
-	s.Assert().NotNil(c1.TestingLog)
-	s.Assert().NotNil(c1.AssembleLog)
+	s.Assert().NotEmpty(c1.TestingLog)
+	s.Assert().NotEmpty(c1.AssembleLog)
 
 
 }
