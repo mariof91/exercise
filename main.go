@@ -17,6 +17,8 @@ func main() {
 	for i := 0; i < carsAmount; i++ {
 		car := <-cars
 		fmt.Println("Inside main, car ID: ", car.Id)
+		fmt.Println("Inside main, assemble log:", car.AssembleLog)
+		fmt.Println("Inside main, testLog: ", car.TestingLog)
 
 	}
 }

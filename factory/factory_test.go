@@ -13,15 +13,30 @@ type factoryUnitTestSuite struct {
 
 func (s *factoryUnitTestSuite) SetupSuite() {
 
-	s.adapter = &Factory{}
+	s.adapter = New()
 }
 
 func TestFactoryUnitTestSuite(t *testing.T) {
 	suite.Run(t, &factoryUnitTestSuite{})
 }
 
-func (s *factoryUnitTestSuite) TestSamble() {
+func (s *factoryUnitTestSuite) TestSample() {
 	//code here
-	// Assert
-	s.Assert().Equal(1, 1)
+	ch := s.adapter.StartAssemblingProcess(2)
+
+	s.Assert().NotNil(ch)
+
+	var cars [] int
+	c1 := <- ch
+	c2 := <- ch
+	cars = append(cars, c1.Id)
+	cars = append(cars, c2.Id)
+
+	s.Assert().Contains( cars, 0)
+	s.Assert().Contains( cars, 1)
+	s.Assert().NotContains(cars, 2)
+	s.Assert().NotNil(c1.TestingLog)
+	s.Assert().NotNil(c1.AssembleLog)
+
+
 }
